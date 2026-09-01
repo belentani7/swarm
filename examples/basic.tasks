@@ -1,0 +1,14 @@
+# SWARM — Example Task Queue
+# Lines starting with # are comments
+# Prefix with ! for low priority, !! for high, !!! for critical
+
+!!! Fix authentication bypass in login handler
+!! Add unit tests for the utils package
+Refactor the auth module to use interfaces
+!! Optimize database queries in the user service
+Update README with new API endpoints
+Add rate limiting to public endpoints
+! Write integration tests for payment flow
+Fix memory leak in WebSocket handler
+!! Add OpenTelemetry tracing to API routes
+! Update Docker compose for local development

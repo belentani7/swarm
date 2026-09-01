@@ -1,0 +1,31 @@
+# ═══════════════════════════════════════
+# SWARM — Default Configuration
+# ═══════════════════════════════════════
+
+# Name of the tmux session
+session_name: swarm
+
+# Default AI CLI to spawn in each pane
+# Options: claude, aider, codex, opencode, or any custom command
+agent_cli: claude
+
+# Maximum budget in USD — agents stop when exceeded (0 = unlimited)
+budget_limit: 10.0
+
+# Restart policy for crashed agents
+# Options: never, on-failure, always
+restart_policy: on-failure
+
+# Directory for swarm data (sessions, logs, db)
+# Defaults to ~/.swarm
+# data_dir: ~/.swarm
+
+# Pane layout
+# Options: tiled, even-horizontal, even-vertical, main-horizontal, main-vertical
+layout: tiled
+
+# Maximum number of agents per session
+max_agents: 25
+
+# Number of log lines to capture per pane
+log_lines: 100

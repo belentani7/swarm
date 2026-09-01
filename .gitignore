@@ -1,0 +1,8 @@
+swarm
+*.db
+*.db-wal
+*.db-shm
+*.exe
+*.test
+*.out
+vendor/
