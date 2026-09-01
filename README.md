@@ -40,8 +40,8 @@ swarm up 4
 # Spawn 5 agents with a task queue
 swarm up 5 --file tasks.txt
 
-# Spawn 3 agents with a task template (%s = node name)
-swarm up 3 "refactor the %s module"
+# Spawn 3 agents with a task template ({name} = node name)
+swarm up 3 "refactor the {name} module"
 
 # Assign a task to agent #2
 swarm assign 2 "fix the login bug in auth.go"

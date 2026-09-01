@@ -41,7 +41,7 @@ func printUsage() {
 Examples:
   swarm up 4                          # spawn 4 idle agents
   swarm up 5 --file tasks.txt         # spawn 5 agents with task queue
-  swarm up 3 "refactor the %s module" # spawn 3 with task template
+  swarm up 3 "refactor the {name} module" # spawn 3 with task template
   swarm assign 2 "fix the login bug" # assign task to agent #2
   swarm cost                          # show spend breakdown
 

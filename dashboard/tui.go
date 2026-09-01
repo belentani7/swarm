@@ -7,8 +7,8 @@ import (
 
 	"github.com/belentani7/swarm/agent"
 	tmuxmgr "github.com/belentani7/swarm/tmux"
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
+	tea "charm.land/bubbletea/v2"
+	"charm.land/lipgloss/v2"
 )
 
 // Styles for the TUI dashboard.
@@ -53,11 +53,11 @@ type tickMsg time.Time
 
 // Model is the Bubble Tea model for the dashboard.
 type Model struct {
-	agents  []agent.AgentState
-	manager *tmuxmgr.Manager
-	cursor  int
-	width   int
-	height  int
+	agents   []agent.AgentState
+	manager  *tmuxmgr.Manager
+	cursor   int
+	width    int
+	height   int
 	quitting bool
 }
 
@@ -67,14 +67,11 @@ func NewProgram(agents []agent.AgentState, mgr *tmuxmgr.Manager) *tea.Program {
 		agents:  agents,
 		manager: mgr,
 	}
-	return tea.NewProgram(m, tea.WithAltScreen())
+	return tea.NewProgram(m)
 }
 
 func (m Model) Init() tea.Cmd {
-	return tea.Batch(
-		tickCmd(),
-		tea.EnterAltScreen,
-	)
+	return tickCmd()
 }
 
 func tickCmd() tea.Cmd {
@@ -85,7 +82,7 @@ func tickCmd() tea.Cmd {
 
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
-	case tea.KeyMsg:
+	case tea.KeyPressMsg:
 		switch msg.String() {
 		case "q", "ctrl+c", "esc":
 			m.quitting = true
@@ -99,29 +96,25 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.cursor--
 			}
 		case "f":
-			// Focus selected agent's pane
 			if m.cursor < len(m.agents) {
 				m.manager.FocusPane(m.agents[m.cursor].ID)
 			}
 		case "x":
-			// Kill selected agent
 			if m.cursor < len(m.agents) {
 				m.manager.KillPane(m.agents[m.cursor].ID)
 			}
 		}
 
 	case tickMsg:
-		// Refresh pane states
 		panes, err := m.manager.ListPanes()
 		if err == nil {
 			states := make([]agent.AgentState, len(panes))
 			for i, p := range panes {
 				states[i] = agent.AgentState{
-					ID:     p.ID,
-					Status: inferStatus(p),
+					ID:       p.ID,
+					Status:   inferStatus(p),
 					IsActive: p.Active,
 				}
-				// Preserve tracked data from existing agents
 				if i < len(m.agents) {
 					states[i].Task = m.agents[i].Task
 					states[i].Cost = m.agents[i].Cost
@@ -142,7 +135,13 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, nil
 }
 
-func (m Model) View() string {
+func (m Model) View() tea.View {
+	v := tea.NewView(m.render())
+	v.AltScreen = true
+	return v
+}
+
+func (m Model) render() string {
 	if m.quitting {
 		return "♻ Swarm dashboard closed. Your agents are still running.\n"
 	}

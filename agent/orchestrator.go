@@ -12,7 +12,7 @@ import (
 	"github.com/belentani7/swarm/cost"
 	"github.com/belentani7/swarm/tasks"
 	tmuxmgr "github.com/belentani7/swarm/tmux"
-	_ "github.com/mattn/go-sqlite3"
+	_ "modernc.org/sqlite"
 )
 
 // Status represents an agent's operational state.
@@ -67,8 +67,13 @@ type Orchestrator struct {
 
 // NewOrchestrator creates a new orchestrator with SQLite session tracking.
 func NewOrchestrator(cfg *config.Config) (*Orchestrator, error) {
+	// Ensure data directory exists
+	if err := os.MkdirAll(cfg.DataDir, 0755); err != nil {
+		return nil, fmt.Errorf("failed to create data directory: %w", err)
+	}
+
 	dbPath := cfg.DataDir + "/swarm.db"
-	db, err := sql.Open("sqlite3", dbPath+"?_journal_mode=WAL")
+	db, err := sql.Open("sqlite", dbPath+"?_pragma=journal_mode(WAL)")
 	if err != nil {
 		return nil, fmt.Errorf("failed to open database: %w", err)
 	}
@@ -142,7 +147,7 @@ func (o *Orchestrator) SpawnAgents(count int, taskTemplate string, taskFile stri
 	for i := 0; i < count; i++ {
 		task := ""
 		if taskTemplate != "" {
-			task = strings.ReplaceAll(taskTemplate, "%s", fmt.Sprintf("node-%d", i))
+			task = strings.ReplaceAll(taskTemplate, "{name}", fmt.Sprintf("node-%d", i))
 		}
 		if o.queue != nil {
 			if t, ok := o.queue.Next(); ok {
@@ -195,7 +200,6 @@ func (o *Orchestrator) LoadAgentState(panes []tmuxmgr.PaneInfo) []AgentState {
 			state.Task = tracked.Task
 			state.Cost = tracked.Cost
 			state.Tokens = tracked.Tokens
-			state.StartTime = tracked.StartTime
 			state.Elapsed = time.Since(tracked.StartTime)
 			state.Restarts = tracked.Restarts
 			tracked.mu.RUnlock()
