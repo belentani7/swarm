@@ -63,7 +63,14 @@ func LoadFromFile(path string) *Queue {
 			line = strings.TrimPrefix(line, "!")
 		}
 
+		line = strings.TrimSpace(line)
+		if line == "" { // A priority marker alone is not a task.
+			continue
+		}
 		q.Add(line, priority)
+	}
+	if err := scanner.Err(); err != nil {
+		fmt.Fprintf(os.Stderr, "⚠ task file %s could not be read completely: %v\n", path, err)
 	}
 
 	return q
@@ -76,17 +83,21 @@ func NewQueue() *Queue {
 	return &Queue{tasks: h}
 }
 
-// Add inserts a task into the queue.
+// Add inserts a task into the queue. Returns -1 for an empty task.
 func (q *Queue) Add(description string, priority int) int {
 	q.mu.Lock()
 	defer q.mu.Unlock()
 
+	description = strings.TrimSpace(description)
+	if description == "" {
+		return -1
+	}
 	id := q.nextID
 	q.nextID++
 
 	heap.Push(q.tasks, &Task{
 		ID:          id,
-		Description: strings.TrimSpace(description),
+		Description: description,
 		Priority:    priority,
 		AssignedTo:  -1,
 	})
@@ -127,7 +138,12 @@ func (q *Queue) MarkCompleted(id int) {
 type taskHeap []*Task
 
 func (h taskHeap) Len() int           { return len(h) }
-func (h taskHeap) Less(i, j int) bool { return h[i].Priority < h[j].Priority }
+func (h taskHeap) Less(i, j int) bool {
+	if h[i].Priority != h[j].Priority {
+		return h[i].Priority < h[j].Priority
+	}
+	return h[i].ID < h[j].ID // FIFO for tasks of equal priority.
+}
 func (h taskHeap) Swap(i, j int)      { h[i], h[j] = h[j], h[i] }
 
 func (h *taskHeap) Push(x interface{}) {
