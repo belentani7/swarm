@@ -22,14 +22,14 @@ type Task struct {
 	ID          int
 	Description string
 	Priority    int
-	AssignedTo  int  // agent ID, -1 if unassigned
+	AssignedTo  int // agent ID, -1 if unassigned
 	Completed   bool
 }
 
 // Queue is a priority-based task queue.
 type Queue struct {
-	mu    sync.Mutex
-	tasks *taskHeap
+	mu     sync.Mutex
+	tasks  *taskHeap
 	nextID int
 }
 
@@ -137,14 +137,14 @@ func (q *Queue) MarkCompleted(id int) {
 
 type taskHeap []*Task
 
-func (h taskHeap) Len() int           { return len(h) }
+func (h taskHeap) Len() int { return len(h) }
 func (h taskHeap) Less(i, j int) bool {
 	if h[i].Priority != h[j].Priority {
 		return h[i].Priority < h[j].Priority
 	}
 	return h[i].ID < h[j].ID // FIFO for tasks of equal priority.
 }
-func (h taskHeap) Swap(i, j int)      { h[i], h[j] = h[j], h[i] }
+func (h taskHeap) Swap(i, j int) { h[i], h[j] = h[j], h[i] }
 
 func (h *taskHeap) Push(x interface{}) {
 	*h = append(*h, x.(*Task))
