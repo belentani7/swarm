@@ -70,7 +70,8 @@ func LoadFromFile(path string) *Queue {
 		q.Add(line, priority)
 	}
 	if err := scanner.Err(); err != nil {
-		fmt.Fprintf(os.Stderr, "⚠ task file %s could not be read completely: %v\n", path, err)
+		fmt.Fprintf(os.Stderr, "⚠ task file %s could not be read completely; discarding partial queue: %v\n", path, err)
+		return NewQueue() // Never dispatch an incomplete task plan.
 	}
 
 	return q
