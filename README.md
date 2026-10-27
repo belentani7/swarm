@@ -13,7 +13,7 @@
 
 **One command to spawn an army of AI coding agents.**
 
-Swarm tiles N AI agents (Claude, Aider, Codex, OpenCode) across tmux panes, gives each a task, and shows you a real-time cyberpunk dashboard with cost tracking, progress, and synapse visualizations.
+Swarm tiles N AI agent CLIs (Claude, Aider, Codex, OpenCode) across tmux panes and provides a terminal dashboard. **Provider billing and token usage are not automatically measured**; displayed estimates require explicit recording.
 
 You're not writing code. You're commanding a collective intelligence.
 
@@ -29,7 +29,7 @@ bash install.sh
 go install github.com/belentani7/swarm@latest
 ```
 
-**Requirements:** Go 1.21+, tmux, and your preferred AI CLI (claude/aider/codex/opencode).
+**Requirements:** Go 1.25+ (per `go.mod`), tmux, and your preferred AI CLI (claude/aider/codex/opencode). Agent CLIs may incur charges. No automatic spend cap is enforced across tmux sessions.
 
 ## Quick Start
 
@@ -116,7 +116,7 @@ log_lines: 100             # lines to capture per pane
 
 ## Cost Monitoring
 
-Swarm tracks token usage and cost per agent in real-time:
+Swarm currently provides an in-process cost estimation API, **not** verified live billing. The `swarm cost` command starts a fresh process and does not reconstruct provider usage:
 
 ```bash
 $ swarm cost
@@ -136,7 +136,7 @@ $ swarm cost
   ╚══════════════════════════════════════╝
 ```
 
-When the budget limit is reached, all agents shut down automatically.
+**Safety limitation:** `budget_limit` is not a reliable hard stop: `Poll()` is a placeholder and `swarm up` does not keep a persistent monitor alive after the CLI exits. Do not launch paid agents assuming this limit will prevent charges. The `assign` command sends input to tmux panes; verify that the intended agent is still active before using it. No unattended production deployment is authorized by this README.
 
 ## Architecture
 
