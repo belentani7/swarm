@@ -3,6 +3,7 @@ package tasks
 import (
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 )
 
@@ -56,5 +57,19 @@ func TestLoadFromFileMarkers(t *testing.T) {
 		if !ok || got.Description != want {
 			t.Fatalf("got %q/%v, want %q", got.Description, ok, want)
 		}
+	}
+}
+
+// A corrupt/truncated task file must not dispatch the valid prefix as if the
+// entire plan had been loaded successfully.
+func TestLoadFromFileDiscardsPartialQueueOnScannerError(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "truncated-tasks.txt")
+	data := "!!! task that must not run\n" + strings.Repeat("x", 70*1024) + "\n"
+	if err := os.WriteFile(path, []byte(data), 0600); err != nil {
+		t.Fatal(err)
+	}
+	q := LoadFromFile(path)
+	if q.Len() != 0 {
+		t.Fatalf("scanner error must discard all tasks; got %d", q.Len())
 	}
 }
